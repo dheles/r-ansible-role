@@ -1,2 +1,34 @@
 ---
-# tasks file for R
+- name: set r checksum key
+  set_fact:
+    checksum_key: "{{ r_download_file | replace('-','_') | replace('.','_')}}"
+
+- name: set r checksum
+  set_fact:
+    r_checksum: "{{ checksums[checksum_key][r_checksum_algorithm] }}"
+  when: r_checksum == "" and checksums[checksum_key][r_checksum_algorithm] is not undefined
+
+- name: stat r d/l
+  stat:
+    path:  "{{ r_download_dir }}/{{ r_download_file }}"
+    checksum_algorithm: "{{ r_checksum_algorithm }}"
+  register: existing_dl
+
+- set_fact:
+    force_new_download: "{{ existing_dl.stat.checksum != r_checksum }}"
+  when: existing_dl.stat.exists
+
+- set_fact:
+    r_checksum_param: "{{ r_checksum_algorithm }}:{{ r_checksum }}"
+  when: r_checksum != ""
+
+- name: get r
+  get_url:
+    url:      "{{ r_url }}"
+    dest:     "{{ r_download_dir }}"
+    checksum: "{{ r_checksum_param | default(omit) }}"
+  register: got_r
+  when: force_new_download | default ('true')
+
+- name: get sha256
+  command: "shasum -a 256 {{ r_download_file }}"

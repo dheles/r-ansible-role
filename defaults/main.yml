@@ -1,2 +1,15 @@
 ---
-# defaults file for R
+r_version_major:        3
+r_version_minor:        3
+r_version_patch:        0
+r_version:              "{{ r_version_major }}.{{ r_version_minor }}.{{ r_version_patch }}"
+r_dir:                  "R-{{ r_version }}"
+r_download_file:        "{{ r_dir }}.tar.gz"
+r_url:                  "https://cran.r-project.org/src/base/R-{{ r_version_major }}/{{ r_download_file }}"
+r_checksum_algorithm:   "sha256"
+# NOTE: will set this dynamically, unless a value is passed in
+r_checksum:             ""
+r_download_dir:         "{{ ansible_env.HOME}}"
+r_install_dir:          "/usr/local"
+r_path:                 "{{ r_install_dir }}/bin"
+r_home:                 "{{ r_install_dir }}/lib/R"
