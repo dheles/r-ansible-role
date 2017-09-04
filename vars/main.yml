@@ -1,2 +1,44 @@
 ---
-# vars file for R
+# NOTE: checksums for R releases are not provided,
+# so I am including these sums I calculated myself,
+# on the belief that it's better than nothing...
+checksums:
+  R_3_4_1_tar_gz:
+    sha1:   "7ce8abccf61f3dc39c40f474060f2c8f00004d62"
+    sha256: "02b1135d15ea969a3582caeb95594a05e830a6debcdb5b85ed2d5836a6a3fc78"
+  R_3_4_0_tar_gz:
+    sha1:   "054c1d099006354c89b195df6783b933846ced60"
+    sha256: "288e9ed42457c47720780433b3d5c3c20983048b789291cc6a7baa11f9428b91"
+  R_3_3_3_tar_gz:
+    sha1:   "9e205a817970578ecd80384f397bae35b46f13b9"
+    sha256: "5ab768053a275084618fb669b4fbaadcc39158998a87e8465323829590bcfc6c"
+  R_3_3_2_tar_gz:
+    sha1:   "0e39e9c2d28fe6bab9c55ca23e08ba8727fd2fca"
+    sha256: "d294ad21e9f574fb4828ebb3a94b8cb34f4f304a41687a994be00dd41a4e514c"
+  R_3_3_1_tar_gz:
+    sha1:   "df853188d3e2b1c2d32393016401c432a5192c4d"
+    sha256: "3dc59ae5831f5380f83c169bac2103ad052efe0ecec4ffa74bde4d85a0fda9e2"
+  R_3_3_0_tar_gz:
+    sha1:   "166a25a7996150c9c83cdafcc89bfcd81578a887"
+    sha256: "9256b154b1a5993d844bee7b1955cd49c99ad72cef03cce3cd1bdca1310311e4"
+  R_3_2_5_tar_gz:
+    sha1:   ""
+    sha256: ""
+  R_3_2_4_revised_tar_gz:
+    sha1:   ""
+    sha256: ""
+  R_3_2_4_tar_gz:
+    sha1:   ""
+    sha256: ""
+  R_3_2_3_tar_gz:
+    sha1:   ""
+    sha256: ""
+  R_3_2_2_tar_gz:
+    sha1:   ""
+    sha256: ""
+  R_3_2_1_tar_gz:
+    sha1:   ""
+    sha256: ""
+  R_3_2_0_tar_gz:
+    sha1:   ""
+    sha256: ""
