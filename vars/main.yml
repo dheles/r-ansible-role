@@ -1,4 +1,16 @@
 ---
+r_package_dependencies:
+  - gfortran
+  - g++
+  - libreadline-dev
+  - libx11-dev
+  - xorg-dev
+  - libbz2-dev
+  - liblzma-dev
+  - libpcre3-dev
+  - libcurl4-openssl-dev
+  - texlive-latex-base
+
 # NOTE: checksums for R releases are not provided,
 # so I am including these sums I calculated myself,
 # on the belief that it's better than nothing...
