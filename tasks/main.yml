@@ -1,34 +1,107 @@
 ---
-- name: set r checksum key
-  set_fact:
-    checksum_key: "{{ r_download_file | replace('-','_') | replace('.','_')}}"
+- name: get initial r version
+  shell:   "R --version"
+  register: r_version_result
+  changed_when: false
 
-- name: set r checksum
-  set_fact:
-    r_checksum: "{{ checksums[checksum_key][r_checksum_algorithm] }}"
-  when: r_checksum == "" and checksums[checksum_key][r_checksum_algorithm] is not undefined
+  # NOTE: regex_search() returns an array of matches, so we will need to use the 'first' filter to make use of the first (and only) value
+- set_fact: returned_r_version={{ r_version_result.stdout | regex_search('(?P<test>\d+\.\d+\.\d+)', '\\g<test>' ) | first }}
 
-- name: stat r d/l
-  stat:
-    path:  "{{ r_download_dir }}/{{ r_download_file }}"
-    checksum_algorithm: "{{ r_checksum_algorithm }}"
-  register: existing_dl
+- block:
+  - name: update apt
+    command: "apt-get update"
+    when: ansible_os_family == 'Debian'
+    become: true
 
-- set_fact:
-    force_new_download: "{{ existing_dl.stat.checksum != r_checksum }}"
-  when: existing_dl.stat.exists
+  - name: add locale to make sure all regression tests pass
+    command: "sudo locale-gen en_GB.UTF-8"
+    when: ansible_os_family == 'Debian'
+    become: true
 
-- set_fact:
-    r_checksum_param: "{{ r_checksum_algorithm }}:{{ r_checksum }}"
-  when: r_checksum != ""
+  - name: install package dependencies
+    package:
+      name: "{{ item }}"
+      state: present
+    become: true
+    with_items: "{{ r_package_dependencies }}"
 
-- name: get r
-  get_url:
-    url:      "{{ r_url }}"
-    dest:     "{{ r_download_dir }}"
-    checksum: "{{ r_checksum_param | default(omit) }}"
-  register: got_r
-  when: force_new_download | default ('true')
+  - name: set r checksum key
+    set_fact:
+      checksum_key: "{{ r_download_file | replace('-','_') | replace('.','_')}}"
 
-- name: get sha256
-  command: "shasum -a 256 {{ r_download_file }}"
+  - name: set r checksum
+    set_fact:
+      r_checksum: "{{ checksums[checksum_key][r_checksum_algorithm] }}"
+    when: r_checksum == "" and checksums[checksum_key][r_checksum_algorithm] is not undefined
+
+  - name: stat r d/l
+    stat:
+      path:  "{{ r_download_dir }}/{{ r_download_file }}"
+      checksum_algorithm: "{{ r_checksum_algorithm }}"
+    register: existing_dl
+
+  - set_fact:
+      force_new_download: "{{ existing_dl.stat.checksum != r_checksum }}"
+    when: existing_dl.stat.exists
+
+  - set_fact:
+      r_checksum_param: "{{ r_checksum_algorithm }}:{{ r_checksum }}"
+    when: r_checksum != ""
+
+  - name: get r
+    get_url:
+      url:      "{{ r_url }}"
+      dest:     "{{ r_download_dir }}"
+      checksum: "{{ r_checksum_param | default(omit) }}"
+    register: got_r
+    when: force_new_download | default ('true')
+
+  # TODO: remove
+  - name: get sha256
+    command: "shasum -a 256 {{ r_download_file }}"
+    when: r_debugging
+
+  - name: extract r
+    unarchive:
+      src:        "{{ r_download_dir }}/{{ r_download_file }}"
+      dest:       "{{ r_download_dir }}"
+      owner:      "{{ r_user }}"
+      group:      "{{ r_user }}"
+      remote_src: true
+    become: true
+    # when: got_r.changed
+
+  - name: configure build
+    shell: "./configure --prefix={{ r_install_dir }} {{ r_configure_args }}"
+    args:
+      chdir: "{{ r_download_dir }}/{{ r_dir }}"
+
+  - name: build r
+    make:
+      chdir: "{{ r_download_dir }}/{{ r_dir }}"
+
+  - name: check the build
+    make:
+      chdir: "{{ r_download_dir }}/{{ r_dir }}"
+      target: "check"
+    when: r_debugging
+
+  - name: install r
+    make:
+      chdir: "{{ r_download_dir }}/{{ r_dir }}"
+      target: "install"
+    become: true
+
+  - name: get final r version
+    shell:   "R --version"
+    register: r_version_result
+    changed_when: false
+
+    # NOTE: regex_search() returns an array of matches, so we will need to use the 'first' filter to make use of the first (and only) value
+  - set_fact: returned_r_version={{ r_version_result.stdout | regex_search('(?P<test>\d+\.\d+\.\d+)', '\\g<test>' ) | first }}
+
+  # when: returned_r_version != r_version
+  when: "not returned_r_version | version_compare(r_version, '==')"
+
+- debug:
+    msg: "R version {{ returned_r_version }} installed"
