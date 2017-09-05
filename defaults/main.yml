@@ -8,7 +8,7 @@ r_dir:                  "R-{{ r_version }}"
 r_download_file:        "{{ r_dir }}.tar.gz"
 r_url:                  "https://cran.r-project.org/src/base/R-{{ r_version_major }}/{{ r_download_file }}"
 r_checksum_algorithm:   "sha256"
-# NOTE: will set this dynamically, unless a value is passed in
+# NOTE: will set this from a stored list, unless a value is passed in
 r_checksum:             ""
 r_user:                 "{{ ansible_user_id }}"
 r_download_dir:         "{{ ansible_user_dir }}"
