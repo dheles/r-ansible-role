@@ -3,9 +3,18 @@
   shell:   "R --version"
   register: r_version_result
   changed_when: false
+  failed_when: false
+
+- debug:
+    msg: "r_version_result.stdout: {{ r_version_result.stdout }}"
+    verbosity: 1
+
+- debug:
+    msg: "r_version_result.stderr: {{ r_version_result.stderr }}"
+    verbosity: 1
 
   # NOTE: regex_search() returns an array of matches, so we will need to use the 'first' filter to make use of the first (and only) value
-- set_fact: returned_r_version={{ r_version_result.stdout | regex_search('(?P<test>\d+\.\d+\.\d+)', '\\g<test>' ) | first }}
+- set_fact: returned_r_version={{ r_version_result.stdout | regex_replace('^$','0.0.0') | regex_search('(?P<test>\d+\.\d+\.\d+)', '\\g<test>' ) | first }}
 
 - block:
   - name: update apt
@@ -98,10 +107,14 @@
     changed_when: false
 
     # NOTE: regex_search() returns an array of matches, so we will need to use the 'first' filter to make use of the first (and only) value
-  - set_fact: returned_r_version={{ r_version_result.stdout | regex_search('(?P<test>\d+\.\d+\.\d+)', '\\g<test>' ) | first }}
+  - set_fact: returned_r_version={{ r_version_result.stdout | regex_replace('^$','0.0.0') | regex_search('(?P<test>\d+\.\d+\.\d+)', '\\g<test>' ) | first }}
 
-  # when: returned_r_version != r_version
   when: "not returned_r_version | version_compare(r_version, '==')"
 
 - debug:
     msg: "R version {{ returned_r_version }} installed"
+
+- name: test r version
+  fail:
+    msg: "attempted to install R version {{ r_version }}, but something went wrong: r_version_result.stderr"
+  when: "not returned_r_version | version_compare(r_version, '==')"
