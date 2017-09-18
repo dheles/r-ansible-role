@@ -1,0 +1,4 @@
+---
+r_package_dependencies:
+  - build-essential
+  - gfortran
